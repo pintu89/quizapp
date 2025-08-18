@@ -1,0 +1,34 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Link CSS -->
+<link rel="stylesheet" href="{% static 'style/quiz.css' %}">
+
+<div class="quiz-container">
+    <h1 class="quiz-title">📝 Quiz Time</h1>
+
+    <form method="post" action="/submit-quiz/">
+        {% csrf_token %}
+
+        {% for question in questions %}
+        <div class="question-block">
+            <p class="question-text">{{ forloop.counter }}. {{ question.text }}</p>
+
+            {% for option in question.options %}
+                <label>
+                    <input type="radio" name="q{{ question.id }}" value="{{ option }}">
+                    {{ option }}
+                </label><br>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="quiz-submit">
+            <button type="submit">Submit Quiz 🚀</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+

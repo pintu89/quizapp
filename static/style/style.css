@@ -1,0 +1,71 @@
+/* General page setup */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fdf6f6; /* soft wedding pink */
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header styling */
+.header {
+    background: linear-gradient(90deg, #f8b6c1, #ffdde1); /* soft pink gradient */
+    color: #fff;
+    padding: 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+}
+
+.header .logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav a:hover {
+    color: #ffe6ec;
+}
+
+/* Main content styling */
+.content {
+    flex: 1;
+    padding: 2em;
+    background: #fff;
+    margin: 1em;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px #5f6bd4;
+}
+
+/* Footer styling */
+.footer {
+    background: #f8b6c1;
+    color: #fff;
+    text-align: center;
+    padding: 1em;
+    font-size: 0.9em;
+}
+
+/* Responsive for mobile */
+@media (max-width: 768px) {
+    .nav {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .nav a {
+        margin: 5px 0;
+    }
+}

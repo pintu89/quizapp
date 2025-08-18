@@ -1,0 +1,44 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Link CSS -->
+<link rel="stylesheet" href="{% static 'style/home.css' %}">
+
+<div class="hero">
+    <section class="features">
+    <h2>✨ Select Your Category</h2>
+    <form method="post" action="/select-category/">
+        {% csrf_token %}
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1em; max-width: 600px; margin: auto; text-align: left;">
+            <label><input type="checkbox" name="category" value="Safety"> Safety</label>
+            <label><input type="checkbox" name="category" value="Technical"> Technical</label>
+            <label><input type="checkbox" name="category" value="Other"> Other</label>
+            <label><input type="checkbox" name="category" value="Admin"> Admin</label>
+            <label><input type="checkbox" name="category" value="DEMU"> DEMU</label>
+            <label><input type="checkbox" name="category" value="MEMU"> MEMU</label>
+            <label><input type="checkbox" name="category" value="DLS"> DLS</label>
+            <label><input type="checkbox" name="category" value="ELS"> ELS</label>
+            <label><input type="checkbox" name="category" value="CHILD"> CHILD</label>
+        </div>
+    </section>
+            <h1>Welcome to the Quiz App 💡</h1>
+    <p>Test your knowledge, challenge friends, and climb the leaderboard!</p>
+
+    <div>
+        <a href="/login/" class="start-btn">Start Quiz 🚀</a>
+    </div>
+            <section class="features" style="margin-top:2em;">
+            <h2>✨ Select Number of Questions</h2>
+            <select name="num_questions" class="dropdown">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="30">30 Questions</option>
+                <option value="40">40 Questions</option>
+                <option value="50">50 Questions</option>
+            </select>
+        </section>
+</div>
+
+{% endblock %}

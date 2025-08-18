@@ -1,0 +1,82 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'style/admin.css' %}">
+
+<div class="container">
+
+    <h1>Admin Dashboard</h1>
+
+    <section>
+        <h2>📊 Check Player Score</h2>
+        <form method="get" action="/view-score/">
+            <label>Search by PF No:</label>
+            <input type="text" name="pf_no" placeholder="Enter PF No">
+
+            <button type="submit">Search</button>
+        </form>
+
+        <form method="get" action="/view-all-scores/">
+            <button type="submit">📃 See All Player Scores</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>👤 Add Player</h2>
+        <form id = "add-player-form" method="post" >
+            {% csrf_token %}
+            <label>CMS ID:</label>
+            <input type="text" name="cms_id" required>
+            <label>Player Name:</label>
+            <input type="text" name="name" required>
+            <label>Father Name:</label>
+            <input type="text" name="father_name" required>
+            <label>PF No:</label>
+            <input type="text" name="pf_no" required>
+            <button type="submit">Add Player</button>
+        </form>
+        <script>
+document.getElementById("add-player-form").onsubmit = async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    let response = await fetch("{% url 'add_player' %}", {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
+
+    if (response.ok) {
+        alert("✅ Player added successfully!");
+        this.reset();
+    } else {
+        alert("❌ Failed to add player");
+    }
+};
+</script>
+    </section>
+
+    <section>
+        <h2>👥 Add Bulk Players</h2>
+        <form method="post" action="/add-bulk-players/" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Upload Excel/CSV:</label>
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>❓ Add Bulk Questions</h2>
+        <form method="post" action="/add-bulk-questions/" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Upload Excel/CSV:</label>
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+    </section>
+
+</div>
+
+{% endblock %}

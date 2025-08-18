@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+migrations/
+staticfiles/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.bash_history
+.bash_logout
+.bashrc
+.profile
+.python_history
+.sudo_as_admin_successful
+.wget-hsts
+__init__.py
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Django
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

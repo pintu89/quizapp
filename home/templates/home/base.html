@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{% block title %}Quiz App{% endblock %}</title>
+	<link rel="stylesheet" href="{% static 'style/style.css' %}">
+</head>
+<body>
+	<header class="header">
+        <div class="logo">💍 Quiz App</div>
+        <nav class="nav">
+            <a href="/">Home</a>
+            <a href="/quiz/">Quiz</a>
+            <a href="/admin_login/">admin Login</a>
+            <a href="/login/">Login</a>
+        </nav>
+    </header>
+	<main class="content">
+        {% block content %}{% endblock %}
+    </main>
+	<footer class="footer">
+        <p>&copy; 2025 Quiz App. All rights reserved.Created By "Santosh Kumar Vishwakarma"</p>
+    </footer>
+</body>
+</html>

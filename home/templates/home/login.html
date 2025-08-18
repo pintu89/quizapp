@@ -1,0 +1,41 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block title %}Login • Quiz App{% endblock %}
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'style/login.css' %}">
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="ring">💍</span>
+      <h1>Welcome to Quiz APP </h1>
+      <p class="subtitle">Log in to start your quiz</p>
+    </div>
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="msg {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form method="post" class="login-form">
+      {% csrf_token %}
+      <!-- Player-style login using CMS ID + PF No -->
+      <label for="cms_id">CMS ID</label>
+      <input id="cms_id" name="cms_id" type="text" required placeholder="Enter your CMS ID">
+
+      <label for="mobile no.">Mobile No.</label>
+      <input id="mobile no" name="Mobile No." type="password" required placeholder="Enter your Mobile number">
+
+      <button type="submit" class="btn-primary">Sign In</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
