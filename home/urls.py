@@ -9,6 +9,7 @@ urlpatterns = [
     path('redirect-after-login/', views.redirect_after_login, name='redirect_after_login'),
     path('player/', views.player, name='player'),
     path('admin_login/', views.admin_login, name='admin_login'),
+    path('start_quiz/', views.start_quiz, name='start_quiz'),
     path('quiz/', views.quiz, name='quiz'),
 ]
 

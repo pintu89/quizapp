@@ -73,10 +73,16 @@ def admin_login(request):
 
 
 @login_required
-def quiz(request):
+def start_quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
     return render(request, 'home/quiz_start.html')
+
+@login_required
+def quiz(request):
+    if 'player_id' not in request.session:
+        return redirect('login')
+    return render(request, 'home/quiz.html')
 
 @login_required
 def add_player(request):

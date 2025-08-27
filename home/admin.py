@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Player, Score
+from .models import Player, Score, Question
 
 # Register your models here.
 @admin.register(Player)
@@ -23,3 +23,11 @@ class ScoreAdmin(admin.ModelAdmin):
     def total_score(self, obj):
         return obj.total_score
     total_score.short_description = "Score"
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ("question_text", "category", "score", "special_note", "created_at")
+    list_filter = ("category", "score")
+    search_fields = ("question_text", "special_note")
+    ordering = ("-created_at",)
+
