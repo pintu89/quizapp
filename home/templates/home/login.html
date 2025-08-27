@@ -27,11 +27,11 @@
     <form method="post" class="login-form">
       {% csrf_token %}
       <!-- Player-style login using CMS ID + PF No -->
-      <label for="cms_id">CMS ID</label>
-      <input id="cms_id" name="cms_id" type="text" required placeholder="Enter your CMS ID">
+      <label for="username">admin, player1</label>
+      <input id="username" name="username" type="text" required placeholder="Enter your CMS ID">
 
-      <label for="mobile no.">Mobile No.</label>
-      <input id="mobile no" name="Mobile No." type="password" required placeholder="Enter your Mobile number">
+      <label for="password">Password,test123</label>
+      <input id="password" name="password" type="password" required placeholder="Enter your Mobile number">
 
       <button type="submit" class="btn-primary">Sign In</button>
       </div>

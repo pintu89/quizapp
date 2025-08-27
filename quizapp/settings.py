@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ei^pmcql#&k-a#sb3)qp^h3c5++o)6m&cw6*5y2u*i@fx3$wt_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.43.125','192.168.31.32']
+ALLOWED_HOSTS = ['192.168.108.125','127.0.0.1','192.168.31.32']
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #Added by Admin ......
     'home',
+    'ai',
 
 ]
 
@@ -57,7 +58,7 @@ ROOT_URLCONF = 'quizapp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

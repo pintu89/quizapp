@@ -1,0 +1,33 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Link CSS -->
+<link rel="stylesheet" href="{% static 'style/home.css' %}">
+
+<div class="hero">
+    <section class="features">
+   
+        <h1>Welcome to the Start Quiz 💡</h1>
+    <p>Test your knowledge, challenge friends, and climb the leaderboard!</p>
+
+    <div class="contaner center-line">
+        <h3 class="contaner centrer-line">Select Quiz Type</h3>
+        <label for="quiz type">
+            <input type="checkbox" name="tech" id="ETTC & DTTC">
+            ETTC & DTTC
+        </label>
+        <label for="safety">
+            <input type="checkbox" name="safety" id="Safety">
+            Safety
+        </label>
+        <label for="Others">
+            <input type="checkbox" name="others" id="Others">
+            Others
+        </label>
+    </div>
+            
+    </section>
+</div>
+
+{% endblock %}
