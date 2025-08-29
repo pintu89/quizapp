@@ -24,98 +24,49 @@
 
     <section>
         <h2>👤 Add Player</h2>
-        <form id = "add-player-form" method="post" >
+        <form id = "add-player-form" method="post" action="{% url 'add_player' %}" >
             {% csrf_token %}
             <label>CMS ID:</label>
             <input type="text" name="crewid" id="crewid" required>
             <label>Player Name:</label>
-            <input type="text" name="crew_name" id="crew_name" required>
+            <input type="text" name="crewname" id="crewname" required>
             <label>Father Name:</label>
             <input type="text" name="father" id="father" >
             <label>Mobile No.</label>
-            <input type="text" name="mobule" id="mobile_no">
+            <input type="text" name="mobile_no" id="mobile_no">
             <label>PF No:</label>
-            <input type="text" name="emp_id" id="emp_id" >
+            <input type="text" name="emp_no" id="emp_no" >
             <button type="submit">Add Player</button>
         </form>
-        <script>
-document.getElementById("add-player-form").onsubmit = async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-
-    let response = await fetch("/add_player/", {
-        method: "POST",
-        body: formData,
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    });
-
-    if (response.ok) {
-        alert("✅ Player added successfully!");
-        this.reset();
-    } else {
-        alert("❌ Failed to add player");
-    }
-};
-</script>
+        
     </section>
 
     <section>
         <h2>👥 Add Bulk Players</h2>
-        <form id="add-bulk-player-form" method="post" >
+        <form id="add-bulk-player-form" 
+        method="POST" 
+        action="{% url 'add_bulk_player' %}"
+        enctype="multipart/form-data">
             {% csrf_token %}
             <label>Upload Excel/CSV:</label>
             <input type="file" name="file" required>
             <button type="submit">Upload</button>
         </form>
-        <script>
-document.getElementById("add-bulk-player-form").onsubmit = async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-
-    let response = await fetch("/add_bulk_player/", {
-        method: "POST",
-        body: formData,
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    });
-
-    if (response.ok) {
-        alert("✅ Player added successfully!");
-        this.reset();
-    } else {
-        alert("❌ Failed to add player");
-    }
-};
-</script>
     </section>
 
     <section>
         <h2>❓ Add Bulk Questions</h2>
-        <form id="bulk_ques_form" method="post" >
+        <form id="bulk_ques_form" 
+        method="POST" 
+        action="{% url 'add_bulk_questions' %}"
+        enctype="multipart/form-data">
             {% csrf_token %}
             <label>Upload Excel/CSV:</label>
             <input type="file" name="file" required>
             <button type="submit">Upload</button>
         </form>
     </section>
-<script>
-document.getElementById("bulk_ques_form").onsubmit = async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
 
-    let response = await fetch("/add_bulk_questions/", {
-        method: "POST",
-        body: formData,
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    });
-
-    if (response.ok) {
-        alert("✅ Player added successfully!");
-        this.reset();
-    } else {
-        alert("❌ Failed to add player");
-    }
-};
-</script>
 </div>
 
 {% endblock %}

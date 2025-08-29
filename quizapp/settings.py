@@ -130,3 +130,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # This Part is added by user Additional settings for static files
 STATICFILES_DIRS = [BASE_DIR / "static",]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+CSRF_TRUSTED_ORIGINS = [
+    "http://192.168.108.125",
+    "http://192.168.31.32",
+    "http://localhost",
+    "http://127.0.0.1",
+]
+CSRF_COOKIE_SECURE = False

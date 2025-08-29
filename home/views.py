@@ -1,15 +1,18 @@
+import pandas as pd
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from home.utils import responses 
-from home.models import Player
+from home.models import Player, Question
+import random
 
 def home(request):
     return render(request, 'home/home.html')
 
 
-def login(request):
+def login(request): # This is working fine don't touch it.
     if request.method == "POST":
         username = request.POST.get('username')   # CMS ID for player OR username for admin
         password = request.POST.get('password')   # Mobile no for player OR admin password
@@ -52,7 +55,7 @@ def login(request):
 
     return render(request, 'home/login.html')
 
-@login_required
+@login_required # This is working fine don't touch it.
 def redirect_after_login(request):
     if request.user.is_authenticated and request.user.is_superuser:
         return redirect('admin_login')   # Admin goes to dashboard
@@ -78,13 +81,29 @@ def start_quiz(request):
         return redirect('login')
     return render(request, 'home/quiz_start.html')
 
-@login_required
+@login_required # This is on testing phase.
 def quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
-    return render(request, 'home/quiz.html')
+    questions = list(Question.objects.all())
+    random.shuffle(questions)
+    formatted_questions = []
+    for q in questions:
+        options_texts = [q.option_a, q.option_b, q.option_c, q.option_d]
+        options_texts = [opt for opt in options_texts if opt]
+        random.shuffle(options_texts)
+        labels = ['A', 'B', 'C', 'D']
+        options = list(zip(labels, options_texts))
+        correct_text = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
+        formatted_questions.append({
+            'id': q.id,
+            'question_text': q.question_text,
+            'options': options,
+            'correct_answer': correct_text,
+        })
+    return render(request, "home/quiz.html", {"questions": formatted_questions})
 
-@login_required
+@login_required # this is not working and need to solve it later
 def add_player(request):
     if request.method == "POST":
         try:
@@ -102,3 +121,85 @@ def add_player(request):
         except Exception as e:
             return responses.error(message=str(e))
     return render(request, "admin.html")
+
+@require_POST
+@login_required
+def submit_quiz(request):
+    try:
+        score = 0
+        results = []
+        for q in Question.objects.all():
+            selected = request.POST.get(f"q{q.id}")
+            correct = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
+            if selected == correct:
+                score += q.score
+                results.append({
+                    "question": q.question_text,
+                    "status": "correct",
+                    "selected": selected,
+                    "correct": correct,
+                    "special_note": q.special_note or ""
+                })
+            else:
+                results.append({
+                    "question": q.question_text,
+                    "status": "wrong",
+                    "selected": selected or "No Answer",
+                    "correct": correct,
+                    "special_note": q.special_note or ""
+                })
+        return responses.success(
+            message="Quiz submitted successfully.",
+            data={
+                "score": score,
+                "results": results
+            }
+        )
+    except Exception as e:
+        return responses.error(message=str(e))
+
+def add_player(request):
+    if request.method == "POST":
+        print("POST data:", request)
+        try:
+            player = Player.objects.create(
+                crewid=request.POST.get("crewid"),
+                crew_name=request.POST.get("crewname"),
+                father=request.POST.get("father"),
+                emp_code=request.POST.get("emp_no"),
+                mobile_no=request.POST.get("mobile_no"),
+            )
+            print("Player created:", player)
+            return responses.success(
+                message=f"Player {player.crew_name} added successfully.",
+                data={"id": player.id}
+            )
+        except Exception as e:
+            print("Error creating player:", e)
+            return responses.error(message=str(e))
+    return render(request, "admin.html")
+
+def add_bulk_player(request):
+    if request.method == "POST":
+        file = request.FILES.get('file')
+        if not file:
+            return JsonResponse({"error": "No file uploaded"}, status=400)
+        try:
+            if file.name.endswith(".csv"):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+            df.columns = [c.strip().upper() for c in df.columns]
+            for _, row in df.iterrows():
+                Player.objects.create(
+                    crewid=row.get("CREWID"),
+                    crew_name=row.get("CREW NAME"),
+                    father=row.get("FATHER"),
+                    emp_code=row.get("EMP CODE"),
+                    mobile_no=str(row.get("MOBILE NO")).strip(),
+                )
+            return JsonResponse({"status": "success","msg": "Players added successfully"})
+        except Exception as e:
+            return JsonResponse({"status": "error","msg": str(e)}, status=500)
+
+    return render(request, "home/admin.html")

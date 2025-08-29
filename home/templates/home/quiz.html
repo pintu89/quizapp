@@ -8,17 +8,18 @@
 <div class="quiz-container">
     <h1 class="quiz-title">📝 Quiz Time</h1>
 
-    <form method="post" action="/submit-quiz/">
+    <form id="quizForm" action="{% url 'submit_quiz' %}" method="POST">
         {% csrf_token %}
 
         {% for question in questions %}
         <div class="question-block">
-            <p class="question-text">{{ forloop.counter }}. {{ question.text }}</p>
+            <p class="question-text">{{ forloop.counter }}. {{ question.question_text }}</p>
 
             {% for option in question.options %}
-                <label>
-                    <input type="radio" name="q{{ question.id }}" value="{{ option }}">
-                    {{ option }}
+                <label class="option-label">
+                    {{ option.0 }}
+                    <input type="radio" name="q{{ question.id }}" value="{{ option.1 }}">
+                    {{ option.1 }}
                 </label><br>
             {% endfor %}
         </div>
