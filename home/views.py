@@ -1,3 +1,5 @@
+#views.py
+
 import pandas as pd
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -41,7 +43,7 @@ def login(request): # This is working fine don't touch it.
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({"success": True, "redirect_url": "/quiz/"})
 
-                return redirect('quiz')
+                return redirect('start_quiz')
             else:
                 print("Player password mismatch")
         except Player.DoesNotExist:
@@ -60,28 +62,23 @@ def redirect_after_login(request):
     if request.user.is_authenticated and request.user.is_superuser:
         return redirect('admin_login')   # Admin goes to dashboard
     elif 'player_id' in request.session:
-        return redirect('quiz')          # Player goes to quiz page
+        return redirect('start_quiz')          # Player goes to quiz page
     else:
         return redirect('login')
+    
 
-
-@login_required
-def player(request):
-    return render(request, 'home/player.html')
-
+def start_quiz(request):
+    if 'player_id' not in request.session:
+        return redirect('login')
+    return render(request, 'home/quiz_start.html')
 
 @login_required
 def admin_login(request):
     return render(request, 'home/admin.html')
 
 
-@login_required
-def start_quiz(request):
-    if 'player_id' not in request.session:
-        return redirect('login')
-    return render(request, 'home/quiz_start.html')
 
-@login_required # This is on testing phase.
+ # This is on testing phase.
 def quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
@@ -103,7 +100,7 @@ def quiz(request):
         })
     return render(request, "home/quiz.html", {"questions": formatted_questions})
 
-@login_required # this is not working and need to solve it later
+# this is not working and need to solve it later
 def add_player(request):
     if request.method == "POST":
         try:
@@ -122,8 +119,7 @@ def add_player(request):
             return responses.error(message=str(e))
     return render(request, "admin.html")
 
-@require_POST
-@login_required
+
 def submit_quiz(request):
     try:
         score = 0
@@ -199,6 +195,33 @@ def add_bulk_player(request):
                     mobile_no=str(row.get("MOBILE NO")).strip(),
                 )
             return JsonResponse({"status": "success","msg": "Players added successfully"})
+        except Exception as e:
+            return JsonResponse({"status": "error","msg": str(e)}, status=500)
+
+    return render(request, "home/admin.html")
+
+def add_bulk_questions(request):
+    if request.method == "POST":
+        file = request.FILES.get('file')
+        if not file:
+            return JsonResponse({"error": "No file uploaded"}, status=400)
+        try:
+            if file.name.endswith(".csv"):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+            df.columns = [c.strip().upper() for c in df.columns]
+            for _, row in df.iterrows():
+                Question.objects.create(
+                    question_text=row.get("QUESTION"),
+                    option_a=row.get("OPTION A"),
+                    option_b=row.get("OPTION B"),
+                    option_c=row.get("OPTION C"),
+                    option_d=row.get("OPTION D"),
+                    correct_answer=row.get("CORRECT ANSWER"),
+                    special_note=row.get("SPECIAL NOTE"),
+                )
+            return JsonResponse({"status": "success","msg": "Questions added successfully"})
         except Exception as e:
             return JsonResponse({"status": "error","msg": str(e)}, status=500)
 
