@@ -83,6 +83,7 @@ def quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
     questions = list(Question.objects.all())
+    questions.sort(key=lambda x: x.id)
     random.shuffle(questions)
     formatted_questions = []
     for q in questions:
