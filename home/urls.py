@@ -22,5 +22,7 @@ urlpatterns = [
     path("edit_question/", views.edit_question_redirect, name = "edit_question"),
     path("edit_question/<int:pk>", views.edit_question, name="edit_question"),
     path("add_bulk_questions/", views.add_bulk_questions, name="add_bulk_questions"),
+
+    path("Play_Game/", views.Play_Game, name="Play_Game"),
 ]
 

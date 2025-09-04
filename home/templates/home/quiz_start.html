@@ -15,18 +15,27 @@
         <h3 class="contaner centrer-line">Select Quiz Type</h3>
         <label for="quiz type">
             <input type="checkbox" name="tech" id="ETTC & DTTC">
-            ETTC & DTTC
+            Science
         </label>
         <label for="safety">
             <input type="checkbox" name="safety" id="Safety">
-            Safety
+            Math
         </label>
         <label for="Others">
             <input type="checkbox" name="others" id="Others">
-            Others
+            General Knowledge
         </label>
             <div>
         <a href="{% url 'quiz' %}" class="start-btn">Start 🚀</a>
+        
+        <select name="question_count" id="question_count" required>
+            <option value="15" selected>15(default)</option>
+            <option value="30">30</option>
+            <option value="45">45</option>
+            <option value="60">60</option>
+            <option value="10">10</option>
+            <option value="5">5</option>
+        </select>
     </div>
     </div>
             

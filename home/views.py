@@ -9,7 +9,8 @@ from django.views.decorators.http import require_POST
 from home.utils import responses 
 from home.models import Player, Question, Score
 import random
-from django.db.models import F
+from django.db.models import F, Q
+from django.contrib import messages
 
 def home(request):
     is_player_logged_in = 'player_id' in request.session
@@ -43,19 +44,25 @@ def login(request): # This is working fine don't touch it.
                 print(f"Player authenticated: {player.crew_name}")
 
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return JsonResponse({"success": True, "redirect_url": "/quiz/"})
+                    return responses.success({"Login successful": True, "redirect_url": "/quiz/"})
 
                 return redirect('start_quiz')
             else:
                 print("Player password mismatch")
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return responses.error({"Invalid Password"}, status=400)
+                return render(request, 'home/login.html', {'error': 'Invalid username or password'})
         except Player.DoesNotExist:
             print("No such player")
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return responses.error({"Invalid Username"}, status=400)
+            return render(request, 'home/login.html', {'error': 'No such player found'})
 
-        # ❌ Authentication failed
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({"success": False, "error": "Invalid username or password"}, status=400)
+        # # ❌ Authentication failed
+        # if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        #     return JsonResponse({"success": False, "error": "Invalid username or password"}, status=400)
 
-        return render(request, 'home/login.html', {'error': 'Invalid username or password'})
+        # return render(request, 'home/login.html', {'error': 'Invalid username or password'})
 
     return render(request, 'home/login.html')
 
@@ -327,3 +334,11 @@ def edit_question(request, pk):
         return redirect ("admin_login")
     return render(request, "home/admin.html",{"question" : question})
 
+
+
+#This is for Play Game Section---->
+def Play_Game(request):
+    if 'player_id' not in request.session:
+        return redirect('login')
+    is_player_logged_in = 'player_id' in request.session
+    return render(request, 'game/game.html', {'is_player_logged_in': is_player_logged_in})

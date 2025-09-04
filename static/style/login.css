@@ -96,3 +96,12 @@
   .login-card { padding: 1.4rem; }
   .login-brand h1 { font-size: 1.35rem; }
 }
+.error-popup {
+  background-color: #ff4d4f;
+  color: white;
+  padding: 10px;
+  margin: 1% 0%;
+  border-radius: 6px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}

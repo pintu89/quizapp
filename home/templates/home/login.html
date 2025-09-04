@@ -9,6 +9,11 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'style/login.css' %}">
 <div class="login-wrapper">
+    {% if error %}
+      <div class="error-popup">
+        {{ error }}
+      </div>
+    {% endif %}
   <div class="login-card">
     <div class="login-brand">
       <span class="ring">💍</span>
@@ -16,16 +21,10 @@
       <p class="subtitle">Log in to start your quiz</p>
     </div>
 
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li class="msg {{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-
     <form method="post" class="login-form">
       {% csrf_token %}
+
+
       <!-- Player-style login using CMS ID + Mobile No -->
       <label for="username">admin, player1</label>
       <input id="username" name="username" type="text" required placeholder="Enter your CMS ID">
