@@ -1,14 +1,15 @@
 #views.py
 
 import pandas as pd
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from home.utils import responses 
-from home.models import Player, Question
+from home.models import Player, Question, Score
 import random
+from django.db.models import F
 
 def home(request):
     return render(request, 'home/home.html')
@@ -76,9 +77,15 @@ def start_quiz(request):
 def admin_login(request):
     return render(request, 'home/admin.html')
 
+# Working from Office
+def admin_logout(request):
+    return render(request, "home/home.html")
+
+def player_logout(request):
+    return render(request, "home/home.html")
 
 
- # This is on testing phase.
+ # This is Working Fine don't touch it.
 def quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
@@ -100,25 +107,6 @@ def quiz(request):
             'correct_answer': correct_text,
         })
     return render(request, "home/quiz.html", {"questions": formatted_questions})
-
-# this is not working and need to solve it later
-def add_player(request):
-    if request.method == "POST":
-        try:
-            player = Player.objects.create(
-                crewid=request.POST.get("crewid"),
-                crew_name=request.POST.get("crewname"),
-                father=request.POST.get("father"),
-                emp_code=request.POST.get("emp_no"),
-                mobile_no=request.POST.get("mobile_no"),
-            )
-            return responses.success(
-                message=f"Player {player.crew_name} added successfully.",
-                data={"id": player.id}
-            )
-        except Exception as e:
-            return responses.error(message=str(e))
-    return render(request, "admin.html")
 
 
 def submit_quiz(request):
@@ -145,6 +133,19 @@ def submit_quiz(request):
                     "correct": correct,
                     "special_note": q.special_note or ""
                 })
+        
+        # Save score to DB
+        player_id = request.session.get('player_id')
+        if request.user.is_authenticated:
+            player = get_object_or_404(Player, id=player_id)
+            score_obj, created = Score.objects.get_or_create(player=player)
+            if created:
+                score_obj.total_score = score
+            else:
+                score_obj.total_score = F('total_score') + score
+            score_obj.save()
+            score_obj.refresh_from_db()
+            
         return responses.success(
             message="Quiz submitted successfully.",
             data={
@@ -155,9 +156,9 @@ def submit_quiz(request):
     except Exception as e:
         return responses.error(message=str(e))
 
+# this is not working and need to solve it later
 def add_player(request):
     if request.method == "POST":
-        print("POST data:", request)
         try:
             player = Player.objects.create(
                 crewid=request.POST.get("crewid"),
@@ -166,15 +167,41 @@ def add_player(request):
                 emp_code=request.POST.get("emp_no"),
                 mobile_no=request.POST.get("mobile_no"),
             )
-            print("Player created:", player)
             return responses.success(
                 message=f"Player {player.crew_name} added successfully.",
                 data={"id": player.id}
             )
         except Exception as e:
-            print("Error creating player:", e)
             return responses.error(message=str(e))
     return render(request, "admin.html")
+
+
+def edit_player_redirect(request):
+    pk = request.GET.get("pk")
+    if pk:
+        return redirect("edit_player", pk=pk)
+    return redirect("home/admin.html")
+
+
+def edit_player(request, pk):
+    try:
+        player = Player.objects.get(Player, emp_no=pk)
+
+    except Player.DoesNotExist:
+        return print("Error edit player:", pk)
+
+    if request.method == "POST":
+
+        player.crewid = request.POST.get("crewid")
+        player.crew_name = request.POST.get("crew_name")
+        player.father = request.POST.get("father")
+        player.mobile_no = request.POST.get("mobile_no")
+        player.emp_code = request.POST.get("emp_code")
+        player.save()
+        return redirect("admin_login")
+
+    return render(request, "home/admin.html",{"player": Player})
+
 
 def add_bulk_player(request):
     if request.method == "POST":
@@ -199,7 +226,44 @@ def add_bulk_player(request):
         except Exception as e:
             return JsonResponse({"status": "error","msg": str(e)}, status=500)
 
-    return render(request, "home/admin.html")
+    return render(request, "admin.html")
+
+
+def add_question(request):
+    if request.method =="POST":
+        try:
+            question_text=request.POST.get("question_text")
+            category = request.POST.get("category")
+            score=request.POST.get("score")
+            special_note=request.POST.get("special_note")
+            #Options
+            option_a=request.POST.get("option_a")
+            option_b=request.POST.get("option_b")
+            option_c=request.POST.get("option_c")
+            option_d=request.POST.get("option_d")
+            #Correct Ans
+            correct_answer=request.POST.get("correct_answer")
+            
+            print("DEBUG : ", option_a, option_b, option_c, option_d, correct_answer)
+            Question.objects.create(
+                question_text=question_text,
+                category=category,
+                score=score,
+                special_note=special_note,
+                option_a=option_a,
+                option_b=option_b,
+                option_c=option_c,
+                option_d=option_d,
+                correct_answer=correct_answer,
+            )
+            print("Questionadded :", question_text,option_a,option_b,option_c,option_d,correct_answer)
+            return responses.success(
+                message=f"Question{Question.question_text} added successfully.",
+            )
+        except Exception as e:
+            print("Error while creating question :", e)
+            return responses.error(message=str(e))
+    return render(request, "admin.html")
 
 def add_bulk_questions(request):
     if request.method == "POST":
@@ -226,4 +290,32 @@ def add_bulk_questions(request):
         except Exception as e:
             return JsonResponse({"status": "error","msg": str(e)}, status=500)
 
-    return render(request, "home/admin.html")
+    return render(request, "admin.html")
+
+
+# For Edit Question in data base;
+
+def edit_question_redirect(request):
+    pk = request.GET.get("pk")
+    if pk:
+        return redirect("edit_question", pk=pk)
+    return redirect("admin_login")
+    
+
+def edit_question(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+
+    if request.method == "POST":
+        question.question_text = request.POST.get("question_text")
+        question.category = request.POST.get("category")
+        question.score = request.POST.get("score")
+        question.special_note = request.POST.get("special_note")
+        question.option_a = request.POST.get("option_a")
+        question.option_b = request.POST.get("option_b")
+        question.option_c = request.POST.get("option_c")
+        question.option_d = request.POST.get("option_d")
+        question.correct_answer = request.POST.get("correct_answer")
+        question.save()
+        return redirect ("admin_login")
+    return render(request, "home/admin.html",{"question" : question})
+

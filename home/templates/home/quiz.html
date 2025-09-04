@@ -5,14 +5,14 @@
 <!-- Link CSS -->
 <link rel="stylesheet" href="{% static 'style/quiz.css' %}">
 
-<div class="quiz-container">
+<div id="quiz-container">
     <h1 class="quiz-title">📝 Quiz Time</h1>
 
-    <form id="quizForm" action="{% url 'submit_quiz' %}" method="POST">
+    <form id="quiz-form" action="{% url 'submit_quiz' %}" method="POST">
         {% csrf_token %}
 
         {% for question in questions %}
-        <div class="question-block">
+        <div class="question-block{% if not forloop.first %} hidden{% endif %}">
             <p class="question-text">{{ forloop.counter }}. {{ question.question_text }}</p>
 
             {% for option in question.options %}
@@ -22,12 +22,14 @@
                     {{ option.1 }}
                 </label><br>
             {% endfor %}
+            
+            {% if forloop.last %}
+            <button type="submit">Submit Quiz 🚀</button>
+            {% else %}
+            <button type="button" class="next-btn">Next ❯</button>
+            {% endif %}
         </div>
         {% endfor %}
-
-        <div class="quiz-submit">
-            <button type="submit">Submit Quiz 🚀</button>
-        </div>
     </form>
 </div>
 
