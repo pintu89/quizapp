@@ -1,40 +1,68 @@
+// quiz/static/js/home.js
 document.addEventListener("DOMContentLoaded", () => {
-    // 🔹 Quiz Form
-    const quizForm = document.getElementById("quizForm");
-    if (quizForm) {
-        quizForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
+    const questionBlocks = document.querySelectorAll(".question-block");
+    const nextBtns = document.querySelectorAll(".next-btn");
+    const quizForm = document.getElementById("quiz-form");
 
-            const formData = new FormData(quizForm);
+    let currentQuestion = 0;
 
-            try {
-                const response = await fetch(quizForm.action, {
-                    method: "POST",
-                    body: formData,
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
-                });
+    // Ensure only first question is visible
+    questionBlocks.forEach((block, i) => {
+        if (i !== 0) block.classList.add("hidden");
+    });
 
-                const result = await response.json();
+    nextBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            // hide current
+            questionBlocks[currentQuestion].classList.add("hidden");
+            currentQuestion++;
 
-                if (result.status === "success") {
-                    result.data.results.forEach(r => {
-                        if (r.status === "Correct") {
-                            alert(`✅ Correct!\nQ: ${r.question}\nNote: ${r.special_note}`);
-                        } else {
-                            alert(`❌ Wrong!\nQ: ${r.question}\nYour Answer: ${r.selected}\nCorrect Answer: ${r.correct}\nNote: ${r.special_note}`);
-                        }
-                    });
-
-                    alert(`🎯 Final Score: ${result.data.score}`);
-                } else {
-                    alert(`⚠️ Error: ${result.message}`);
-                }
-            } catch (err) {
-                console.error("Error submitting quiz:", err);
-                alert("⚠️ Something went wrong!");
+            if (currentQuestion < questionBlocks.length) {
+                // show next
+                questionBlocks[currentQuestion].classList.remove("hidden");
+            } else {
+                // last question → submit
+                quizForm.requestSubmit();
             }
         });
-    }
+    });
+
+
+    // AJAX submit
+    quizForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        console.log("📩 Quiz submitted");
+        const formData = new FormData(quizForm);
+
+        try {
+            const response = await fetch(quizForm.action, {
+                method: "POST",
+                body: formData,
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            });
+
+            const result = await response.json();
+            console.log("📩 Quiz response:", result);
+
+            if (result.status === "success") {
+                result.data.results.forEach(r => {
+                    if (r.status.toLowerCase() === "correct") {
+                        alert(`✅ Correct!\nQ: ${r.question}\nNote: ${r.special_note}`);
+                    } else {
+                        alert(`❌ Wrong!\nQ: ${r.question}\nYour Answer: ${r.selected}\nCorrect Answer: ${r.correct}\nNote: ${r.special_note}`);
+                    }
+                });
+                alert(`🎯 Final Score: ${result.data.score}`);
+                window.location.href = "/";
+            } else {
+                alert(`⚠️ Error: ${result.message}`);
+            }
+        } catch (err) {
+            console.error("Error submitting quiz:", err);
+            alert("⚠️ Something went wrong!");
+        }
+    });
+
 
     // 🔹 Add Player Form
     const addPlayerForm = document.getElementById("add-player-form");
@@ -101,4 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+    
 });
+
+
