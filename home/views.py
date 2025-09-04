@@ -3,7 +3,7 @@
 import pandas as pd
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from home.utils import responses 
@@ -12,7 +12,8 @@ import random
 from django.db.models import F
 
 def home(request):
-    return render(request, 'home/home.html')
+    is_player_logged_in = 'player_id' in request.session
+    return render(request, 'home/home.html', {'is_player_logged_in': is_player_logged_in})
 
 
 def login(request): # This is working fine don't touch it.
@@ -71,7 +72,8 @@ def redirect_after_login(request):
 def start_quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
-    return render(request, 'home/quiz_start.html')
+    is_player_logged_in = 'player_id' in request.session
+    return render(request, 'home/quiz_start.html', {'is_player_logged_in': is_player_logged_in})
 
 @login_required
 def admin_login(request):
@@ -79,10 +81,15 @@ def admin_login(request):
 
 # Working from Office
 def admin_logout(request):
+    auth_logout(request)
+    request.session.flush()
     return render(request, "home/home.html")
 
-def player_logout(request):
-    return render(request, "home/home.html")
+def logout(request):
+    auth_logout(request)
+    request.session.flush()
+    is_player_logged_in = 'player_id' in request.session
+    return render(request, "home/home.html", {'is_player_logged_in': is_player_logged_in})
 
 
  # This is Working Fine don't touch it.
@@ -106,7 +113,8 @@ def quiz(request):
             'options': options,
             'correct_answer': correct_text,
         })
-    return render(request, "home/quiz.html", {"questions": formatted_questions})
+    is_player_logged_in = 'player_id' in request.session
+    return render(request, "home/quiz.html", {"questions": formatted_questions, 'is_player_logged_in': is_player_logged_in})
 
 
 def submit_quiz(request):

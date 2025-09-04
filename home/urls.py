@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 urlpatterns = [
     path('', views.home, name='home'),
     path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout'),
     path('admin_login/', views.admin_login, name='admin_login'),
     path('account/login/', lambda request: redirect('login')),
     path('redirect-after-login/', views.redirect_after_login, name='redirect_after_login'),

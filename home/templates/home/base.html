@@ -14,8 +14,12 @@
         <nav class="nav">
             <a href="/">Home</a>
             <a href="/quiz/">Quiz</a>
-            <a href="/admin_login/">admin Login</a>
-            <a href="/login/">Login</a>
+            <a href="/admin_login/">Admin Page</a>
+            {% if user.is_authenticated or is_player_logged_in %}
+                <a href="/logout/">Logout</a>
+            {% else %}
+                <a href="/login/">Login</a>
+            {% endif %}
         </nav>
     </header>
 	<main class="content">

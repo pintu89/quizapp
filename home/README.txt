@@ -6,4 +6,5 @@ sudo nginx -t
 python manage.py collectstatic
 
 sudo journalctl -u gunicorn -f for error in nginx and gunicorn
-
+sudo tail -f /var/log/nginx/error.log
+sudo journalctl -u nginx -u gunicorn -f
