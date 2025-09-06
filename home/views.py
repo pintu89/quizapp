@@ -1,5 +1,5 @@
 #views.py
-
+import re
 import pandas as pd
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
@@ -290,18 +290,49 @@ def add_bulk_questions(request):
                 df = pd.read_csv(file)
             else:
                 df = pd.read_excel(file)
+
             df.columns = [c.strip().upper() for c in df.columns]
+            required_cols=["QUESTION","OPTION A","OPTION B","OPTION C","OPTION D","CORRECT ANSWER"]
+            for col in required_cols:
+                if col not in df.columns:
+                    messages.error(request, f"Missing required column: {col}")
+                    return JsonResponse({"status": "error","msg": f"Missing required column: {col}"}, status=400)
+
+            added, skipped = 0, 0
+
             for _, row in df.iterrows():
-                Question.objects.create(
-                    question_text=row.get("QUESTION"),
-                    option_a=row.get("OPTION A"),
-                    option_b=row.get("OPTION B"),
-                    option_c=row.get("OPTION C"),
-                    option_d=row.get("OPTION D"),
-                    correct_answer=row.get("CORRECT ANSWER"),
-                    special_note=row.get("SPECIAL NOTE"),
-                )
-            return JsonResponse({"status": "success","msg": "Questions added successfully"})
+                q_text = str(row.get("QUESTION")).strip()
+                raw_ans = str(row.get("CORRECT ANSWER")).strip().upper()
+                match = re.search(r'([A-D])', raw_ans, re.IGNORECASE)
+                if match:
+                    correct_answer = match.group(1).upper()
+                else:
+                    correct_answer = ""
+                if not q_text:
+                    skipped += 1
+                    continue
+                
+                if Question.objects.filter(question_text__iexact=q_text).exists():
+                    skipped += 1
+                    continue
+        
+                try:
+                    Question.objects.create(
+                        question_text=row.get("QUESTION"),
+                        option_a=row.get("OPTION A"),
+                        option_b=row.get("OPTION B"),
+                        option_c=row.get("OPTION C"),
+                        option_d=row.get("OPTION D"),
+                        correct_answer=correct_answer,
+                        special_note=row.get("SPECIAL NOTE"),
+                        category=row.get("CATEGORY", "Others"),
+                        score=row.get("SCORE", 10),
+                    )
+                    added += 1
+                except Exception as e:
+                    print(f"Error adding question at row {skipped}: {e}")
+                    continue
+            return JsonResponse({"status": "success","msg": f"{added} Questions added successfully"})
         except Exception as e:
             return JsonResponse({"status": "error","msg": str(e)}, status=500)
 

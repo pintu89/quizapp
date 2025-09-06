@@ -62,19 +62,43 @@
     </section>
 
     <section>
-<h2>Add Question</h2>
-<form id="add-question-form"
-method="POST"
-action="{% url 'add_question' %}"
-enctype="multipart/form-data">
-    {% csrf_token %}
-    <label>Question Text:</label>
-    <input type="text" name="question_text" required>
-    <label>Options (comma-separated):</label>
-    <input type="text" name="options" required>
-    <button type="submit">Add Question</button>
-</form>
-    </section>
+    <h2>Add Question</h2>
+    <form id="add-question-form"
+    method="POST"
+    action="{% url 'add_question' %}"
+    enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Question Text:</label>
+        <input type="text" name="question_text" required>
+        <label for="category">Category</label>
+        <select name="category" id="category">
+            <option value="ZTC">Zonal Training Center</option>
+            <option value="ETTC">Electric Training Center</option>
+            <option value="Others">Others</option>
+        </select>
+        <label for="score">Score</label>
+        <input type="text" name="score" id="score" required, 1>
+
+        <label for="special_note">Special Note</label>
+        <input type="text" name="special_note" id="special_note" >
+
+        <label>Option A:</label>
+        <input type="text" name="option_a" required>
+        <label>Option B:</label>
+        <input type="text" name="option_b" required>
+        <label>Option C:</label>
+        <input type="text" name="option_c" required>
+        <label>Option D:</label>
+        <input type="text" name="option_d" required>
+        <select name="correct_answer" id="correct_answer">
+            <option value="A" required>A</option>
+            <option value="B" required>B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+        </select>
+        <button type="submit">Add Question</button>
+    </form>
+        </section>
 
     <section>
         <h2>❓ Add Bulk Questions</h2>

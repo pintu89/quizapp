@@ -53,3 +53,20 @@
 .features li {
     margin-bottom: .6em;
 }
+
+/* Start Game Button */
+.game-btn {
+    display: inline-block;
+    padding: 14px 28px;
+    background: linear-gradient(90deg, #f8b6c1, #ffdde1);
+    color: #3a2b2c;
+    font-weight: 700;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all .2s;
+}
+
+.game-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(90deg, #ffdde1, #f8b6c1);
+}
