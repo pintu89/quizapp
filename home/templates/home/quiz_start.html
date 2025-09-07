@@ -12,22 +12,22 @@
     <p>Test your knowledge, challenge friends, and climb the leaderboard!</p>
 
     <div class="contaner center-line">
-        <h3 class="contaner centrer-line">Select Quiz Type</h3>
-        <label for="quiz type">
-            <input type="checkbox" name="tech" id="ETTC & DTTC">
-            Science
-        </label>
-        <label for="safety">
-            <input type="checkbox" name="safety" id="Safety">
-            Math
-        </label>
-        <label for="Others">
-            <input type="checkbox" name="others" id="Others">
-            General Knowledge
-        </label>
-            <div>
-        <a href="{% url 'quiz' %}" class="start-btn">Start 🚀</a>
-        
+        <form action="{% url 'quiz' %}" method="get">   
+        <h3>Select Quiz Type:</h3>
+    <label>
+        <input type="checkbox" name="category" value="ETTC">
+        Science
+    </label>
+    <label>
+        <input type="checkbox" name="category" value="ZTC">
+        Math
+    </label>
+    <label>
+        <input type="checkbox" name="category" value="Others">
+        General Knowledge
+    </label>
+        <button type="submit" class="start-btn">Start Quiz</button>
+
         <select name="question_count" id="question_count" required>
             <option value="15" selected>15(default)</option>
             <option value="30">30</option>
@@ -36,6 +36,7 @@
             <option value="10">10</option>
             <option value="5">5</option>
         </select>
+        </form>
     </div>
     </div>
           <a href="/Play_Game/" class="game-btn">Play Game </a>  

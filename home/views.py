@@ -99,13 +99,20 @@ def logout(request):
     return render(request, "home/home.html", {'is_player_logged_in': is_player_logged_in})
 
 
- # This is Working Fine don't touch it.
+# This is Working Fine but showing all questions not selected.
 def quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
-    questions = list(Question.objects.all())
-    questions.sort(key=lambda x: x.id)
+    selected_category = request.GET.getlist('category')
+    question_count = int(request.GET.get('question_count', 15))
+    if selected_category and selected_category != ['All']:
+        questions = Question.objects.filter(category__in=selected_category)
+    else:
+        questions = Question.objects.all()
+    questions = list(questions) 
     random.shuffle(questions)
+    questions = questions[:question_count]
+    request.session['quiz_questions'] = [q.id for q in questions]   
     formatted_questions = []
     for q in questions:
         options_texts = [q.option_a, q.option_b, q.option_c, q.option_d]
@@ -128,7 +135,9 @@ def submit_quiz(request):
     try:
         score = 0
         results = []
-        for q in Question.objects.all():
+        question_ids = request.session.get('quiz_questions', [])
+        questions =Question.objects.filter(id__in=question_ids)
+        for q in questions:
             selected = request.POST.get(f"q{q.id}")
             correct = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
             if selected == correct:
@@ -326,7 +335,7 @@ def add_bulk_questions(request):
                         correct_answer=correct_answer,
                         special_note=row.get("SPECIAL NOTE"),
                         category=row.get("CATEGORY", "Others"),
-                        score=row.get("SCORE", 10),
+                        score=row.get("SCORE", 5),
                     )
                     added += 1
                 except Exception as e:
@@ -372,4 +381,5 @@ def Play_Game(request):
     if 'player_id' not in request.session:
         return redirect('login')
     is_player_logged_in = 'player_id' in request.session
+
     return render(request, 'game/game.html', {'is_player_logged_in': is_player_logged_in})
