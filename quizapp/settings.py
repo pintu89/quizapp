@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ei^pmcql#&k-a#sb3)qp^h3c5++o)6m&cw6*5y2u*i@fx3$wt_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.108.125','127.0.0.1','192.168.31.32']
+ALLOWED_HOSTS = ['192.168.245.125','127.0.0.1','192.168.31.32']
 
 
 # Application definition
@@ -132,7 +132,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [BASE_DIR / "static",]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 CSRF_TRUSTED_ORIGINS = [
-    "http://192.168.108.125",
+    "http://192.168.245.125",
     "http://192.168.31.32",
     "http://localhost",
     "http://127.0.0.1",
