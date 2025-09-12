@@ -24,20 +24,26 @@ class Score(models.Model):
 
 class Question(models.Model):
     CATEGORY_CHOICES = [
-        ("ZTC","Zonal Training Center"),
-        ("ETTC", "Electrical Training Center"),
-        ("Others", "Others")
+        ("OPS1","Option 1"),
+        ("OPS2", "Option 2"),
+        ("OPS3", "Option 3"),
+        ("OPS4", "OPtion 4"),
+        ("OPS5", "Option 5")
     ]
-    question_text = models.TextField()
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="Others")
+    question_eng = models.TextField()
+    question_hin = models.TextField(blank=True, null=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="OPS1")
     score = models.PositiveBigIntegerField(default=0)
     special_note = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    option_a = models.CharField(max_length=255, blank=True, null=True)
-    option_b = models.CharField(max_length=255, blank=True, null=True)
-    option_c = models.CharField(max_length=255, blank=True, null=True)
-    option_d = models.CharField(max_length=255, blank=True, null=True)
+    option_a_eng = models.CharField(max_length=255, blank=True, null=True)
+    option_a_hin = models.CharField(max_length=255, blank=True, null=True)
+    option_b_eng = models.CharField(max_length=255, blank=True, null=True)
+    option_b_hin = models.CharField(max_length=255, blank=True, null=True)
+    option_c_eng = models.CharField(max_length=255, blank=True, null=True)
+    option_c_hin = models.CharField(max_length=255, blank=True, null=True)
+    option_d_eng = models.CharField(max_length=255, blank=True, null=True)
+    option_d_hin = models.CharField(max_length=255, blank=True, null=True)
     correct_answer = models.CharField(
         max_length=1,
         choices=[
@@ -50,7 +56,7 @@ class Question(models.Model):
         null=True
     )
     def __str__(self):
-        return f"Question: {self.question_text[:50]}...({self.category})"
+        return f"Question: {self.question_eng[:80]}|Q(HI): {self.question_hin[:80]}...({self.category})"
 
 class PlayerAnswer(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player_answers')

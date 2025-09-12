@@ -99,7 +99,7 @@ def logout(request):
     is_player_logged_in = 'player_id' in request.session
     return render(request, "home/home.html", {'is_player_logged_in': is_player_logged_in})
 
-# New Try to submit and take question from db...
+
 def quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
@@ -128,7 +128,11 @@ def quiz(request):
     request.session['quiz_questions'] = [q.id for q in questions]
     formatted_questions = []
     for q in questions:
-        options_texts = [q.option_a, q.option_b, q.option_c, q.option_d]
+        options_texts = []
+        if q.option_a_eng: options_texts.append(q.option_a_eng, q.option_a_hin)
+        if q.option_b_eng: options_texts.append(q.option_b_eng, q.option_b_hin)
+        if q.option_c_eng: options_texts.append(q.option_c_eng, q.option_c_hin)
+        if q.option_d_eng: options_texts.append(q.option_d_eng, q.option_d_hin)
         options_texts = [opt for opt in options_texts if opt]
         random.shuffle(options_texts)
         labels = ['A','B','C','D']
@@ -136,7 +140,8 @@ def quiz(request):
         correct_text = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
         formatted_questions.append({
             'id' : q.id,
-            'question_text' : q.question_text,
+            'question_eng' : q.question_eng,
+            'question_hin' : q.question_hin,
             'options' : options,
             'correct_answer' : correct_text,
         })
@@ -159,7 +164,7 @@ def submit_quiz(request):
 
         for q in questions:
             selected = request.POST.get(f"q{q.id}")
-            correct = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
+            correct = getattr(q, f"option_{q.correct_answer.lower()}_eng") if q.correct_answer else None
             is_correct = (selected == correct)
 
             PlayerAnswer.objects.get_or_create(
@@ -174,14 +179,14 @@ def submit_quiz(request):
             if is_correct:
                 score += q.score
                 results.append({
-                    "question" : q.question_text,
+                    "question" : q.question_eng,
                     "status" : "correct",
                     "selected" : correct,
                     "special_note" : q.special_note or ""
                 })
             else:
                 results.append({
-                    "question" : q.question_text,
+                    "question" : q.question_eng,
                     "status": "Wrong",
                     "selected" : selected or "No Answer",
                     "correct": correct,
@@ -210,92 +215,6 @@ def submit_quiz(request):
         return responses.error(message=str(e))
 
 
-
-'''
-# This is Working Fine but showing same questions repetedly.
-def quiz(request):
-    if 'player_id' not in request.session:
-        return redirect('login')
-    selected_category = request.GET.getlist('category')
-    question_count = int(request.GET.get('question_count', 15))
-    if selected_category and selected_category != ['All']:
-        questions = Question.objects.filter(category__in=selected_category).order_by(Random()).distinct()[:question_count]
-    else:
-        questions = Question.objects.order_by(Random()).distinct()[:question_count]
-    request.session['quiz_questions'] = [q.id for q in questions]   
-    formatted_questions = []
-    for q in questions:
-        options_texts = [q.option_a, q.option_b, q.option_c, q.option_d]
-        options_texts = [opt for opt in options_texts if opt]
-        random.shuffle(options_texts)
-        labels = ['A', 'B', 'C', 'D']
-        options = list(zip(labels, options_texts))
-        correct_text = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
-        formatted_questions.append({
-            'id': q.id,
-            'question_text': q.question_text,
-            'options': options,
-            'correct_answer': correct_text,
-        })
-    is_player_logged_in = 'player_id' in request.session
-    return render(request, "home/quiz.html", {"questions": formatted_questions, 'is_player_logged_in': is_player_logged_in})
-
-
-def submit_quiz(request):
-    try:
-        score = 0
-        results = []
-        question_ids = request.session.get('quiz_questions', [])
-        questions =Question.objects.filter(id__in=question_ids)
-        for q in questions:
-            selected = request.POST.get(f"q{q.id}")
-            correct = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
-            if selected == correct:
-                score += q.score
-                results.append({
-                    "question": q.question_text,
-                    "status": "correct",
-                    "selected": selected,
-                    "correct": correct,
-                    "special_note": q.special_note or ""
-                })
-            else:
-                results.append({
-                    "question": q.question_text,
-                    "status": "wrong",
-                    "selected": selected or "No Answer",
-                    "correct": correct,
-                    "special_note": q.special_note or ""
-                })
-        
-        # Save score to DB
-        player_id = request.session.get('player_id')
-        if not player_id:
-            return responses.error(message="Player not logged in.", status=401)
-        player = get_object_or_404(Player, id=player_id)
-        player.score = score
-        player.save(update_fields=['score'])
-        score_obj, created = Score.objects.get_or_create(player=player)
-        if created:
-            score_obj.total_score = score
-        else:
-            score_obj.total_score = F('total_score') + score
-        score_obj.save()
-        score_obj.refresh_from_db()
-        return responses.success(
-            message="Quiz submitted successfully.",
-            data={
-                "score": score,
-                "session_score": score,
-                "player_score": player.score,
-                "total_score": score_obj.total_score,
-                "results": results
-            }
-        )
-    except Exception as e:
-        return responses.error(message=str(e))
-'''
-# this is not working and need to solve it later
 def add_player(request):
     if request.method == "POST":
         try:
@@ -371,33 +290,42 @@ def add_bulk_player(request):
 def add_question(request):
     if request.method =="POST":
         try:
-            question_text=request.POST.get("question_text")
+            question_eng=request.POST.get("question_eng")
+            question_hin=request.POST.get("question_hin")
             category = request.POST.get("category")
             score=request.POST.get("score")
             special_note=request.POST.get("special_note")
             #Options
-            option_a=request.POST.get("option_a")
-            option_b=request.POST.get("option_b")
-            option_c=request.POST.get("option_c")
-            option_d=request.POST.get("option_d")
+            option_a_eng=request.POST.get("option_a_eng")
+            option_b_eng=request.POST.get("option_b_eng")
+            option_c_eng=request.POST.get("option_c_eng")
+            option_d_eng=request.POST.get("option_d_eng")
+            option_a_hin=request.POST.get("option_a_hin")
+            option_b_hin=request.POST.get("option_b_hin")
+            option_c_hin=request.POST.get("option_c_hin")
+            option_d_hin=request.POST.get("option_d_hin")
             #Correct Ans
             correct_answer=request.POST.get("correct_answer")
-            
-            print("DEBUG : ", option_a, option_b, option_c, option_d, correct_answer)
             Question.objects.create(
-                question_text=question_text,
+                question_eng=question_eng,
+                question_hin=question_hin,
                 category=category,
                 score=score,
                 special_note=special_note,
-                option_a=option_a,
-                option_b=option_b,
-                option_c=option_c,
-                option_d=option_d,
+                option_a_eng=option_a_eng,
+                option_b_eng=option_b_eng,
+                option_c_eng=option_c_eng,
+                option_d_eng=option_d_eng,
+
+                option_a_hin=option_a_hin,
+                option_b_hin=option_b_hin,
+                option_c_hin=option_c_hin,
+                option_d_hin=option_d_hin,
                 correct_answer=correct_answer,
             )
-            print("Questionadded :", question_text,option_a,option_b,option_c,option_d,correct_answer)
+            print("Questionadded :", question_eng,question_hin,option_a_eng,correct_answer)
             return responses.success(
-                message=f"Question{Question.question_text} added successfully.",
+                message=f"Question{Question.question_eng},{Question.question_hin} added successfully.",
             )
         except Exception as e:
             print("Error while creating question :", e)
@@ -436,17 +364,26 @@ def add_bulk_questions(request):
                     skipped += 1
                     continue
                 
-                if Question.objects.filter(question_text__iexact=q_text).exists():
+                if Question.objects.filter(question_eng__iexact=q_text).exists():
                     skipped += 1
+                    continue
+                if Question.objects.filter(question_hin_iexact=q_text).exists():
+                    skipped +=1
                     continue
         
                 try:
                     Question.objects.create(
-                        question_text=row.get("QUESTION"),
-                        option_a=row.get("OPTION A"),
-                        option_b=row.get("OPTION B"),
-                        option_c=row.get("OPTION C"),
-                        option_d=row.get("OPTION D"),
+                        question_eng=row.get("QUESTION"),
+                        question_hin=row.get("QUESTION"),
+                        option_a_eng=row.get("OPTION A"),
+                        option_b_eng=row.get("OPTION B"),
+                        option_c_eng=row.get("OPTION C"),
+                        option_d_eng=row.get("OPTION D"),
+
+                        option_a_hin=row.get("OPTION A"),
+                        option_b_hin=row.get("OPTION B"),
+                        option_c_hin=row.get("OPTION C"),
+                        option_d_hin=row.get("OPTION D"),
                         correct_answer=correct_answer,
                         special_note=row.get("SPECIAL NOTE"),
                         category=row.get("CATEGORY", "Others"),
@@ -463,7 +400,7 @@ def add_bulk_questions(request):
     return render(request, "admin.html")
 
 
-# For Edit Question in data base;
+# For Edit Question in data base it is not working;
 
 def edit_question_redirect(request):
     pk = request.GET.get("pk")
@@ -476,14 +413,19 @@ def edit_question(request, pk):
     question = get_object_or_404(Question, pk=pk)
 
     if request.method == "POST":
-        question.question_text = request.POST.get("question_text")
+        question.question_eng = request.POST.get("question_eng")
+        question.question_hin = request.POST.get("question_hin")
         question.category = request.POST.get("category")
         question.score = request.POST.get("score")
         question.special_note = request.POST.get("special_note")
-        question.option_a = request.POST.get("option_a")
-        question.option_b = request.POST.get("option_b")
-        question.option_c = request.POST.get("option_c")
-        question.option_d = request.POST.get("option_d")
+        question.option_a_eng = request.POST.get("option_a_eng")
+        question.option_b_eng = request.POST.get("option_b_eng")
+        question.option_c_eng = request.POST.get("option_c_eng")
+        question.option_d_eng = request.POST.get("option_d_eng")
+        question.option_a_hin = request.POST.get("option_a_hin")
+        question.option_b_hin = request.POST.get("option_b_hin")
+        question.option_c_hin = request.POST.get("option_c_hin")
+        question.option_d_hin = request.POST.get("option_d_hin")
         question.correct_answer = request.POST.get("correct_answer")
         question.save()
         return redirect ("admin_login")

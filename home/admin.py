@@ -26,8 +26,8 @@ class ScoreAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ("question_text", "category", "score", "special_note", "created_at")
+    list_display = ("question_eng","question_hin", "category", "score", "special_note", "created_at")
     list_filter = ("category", "score")
-    search_fields = ("question_text", "special_note")
+    search_fields = ("question_eng","question_hin", "special_note")
     ordering = ("-created_at",)
 

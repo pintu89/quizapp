@@ -13,7 +13,10 @@
 
         {% for question in questions %}
         <div class="question-block{% if not forloop.first %} hidden{% endif %}">
-            <p class="question-text">{{ forloop.counter }}. {{ question.question_text }}</p>
+            <p class="question-text">{{ forloop.counter }}. {{ question.question_eng}}</p>
+            {% if question.question_hin %}
+                <p class="question-text">({{ question.question_hin}})</p>
+            {% endif %}
 
             {% for option in question.options %}
                 <label class="option-label">

@@ -69,12 +69,14 @@
     enctype="multipart/form-data">
         {% csrf_token %}
         <label>Question Text:</label>
-        <input type="text" name="question_text" required>
+        <input type="text" name="question_eng"  placeholder="Question in English">
+        <input type="text" name="question_hin" placeholder="प्रश्न हिन्दी में । ">
         <label for="category">Category</label>
         <select name="category" id="category">
-            <option value="ZTC">Zonal Training Center</option>
-            <option value="ETTC">Electric Training Center</option>
-            <option value="Others">Others</option>
+            <option value="OPS1">Class 5</option>
+            <option value="OPS2">Class 6</option>
+            <option value="OPS3">Class 7</option>
+            <option value="OPS4">Class 8</option>
         </select>
         <label for="score">Score</label>
         <input type="text" name="score" id="score" required, 1>
@@ -83,13 +85,17 @@
         <input type="text" name="special_note" id="special_note" >
 
         <label>Option A:</label>
-        <input type="text" name="option_a" required>
+        <input type="text" name="option_a_eng" placeholder="English" required>
+        <input type="text" name="option_a_hin" placeholder="हिन्दी ">
         <label>Option B:</label>
-        <input type="text" name="option_b" required>
+        <input type="text" name="option_b_eng" placeholder="English" required>
+        <input type="text" name="option_b_hin" placeholder="हिन्दी">
         <label>Option C:</label>
-        <input type="text" name="option_c" required>
+        <input type="text" name="option_c_eng" placeholder="English" required>
+        <input type="text" name="option_c_hin" placeholder="हिन्दी">
         <label>Option D:</label>
-        <input type="text" name="option_d" required>
+        <input type="text" name="option_d_eng" placeholder="English" required>
+        <input type="text" name="option_d_hin" placeholder="हिन्दी">
         <select name="correct_answer" id="correct_answer">
             <option value="A" required>A</option>
             <option value="B" required>B</option>
