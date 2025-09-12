@@ -51,3 +51,13 @@ class Question(models.Model):
     )
     def __str__(self):
         return f"Question: {self.question_text[:50]}...({self.category})"
+
+class PlayerAnswer(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='player_answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='player_answers')
+    selected_answer = models.CharField(max_length=255, null=True, blank=True)
+    is_correct = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('player', 'question')

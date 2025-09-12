@@ -4,12 +4,12 @@ from .models import Player, Score, Question
 # Register your models here.
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("crewid", "crew_name", "father", "emp_code", "mobile_no")
+    list_display = ("crewid", "crew_name", "father", "emp_code", "mobile_no","score","category")
     search_fields = ("crewid", "crew_name", "emp_code", "mobile_no")
     fields = ("crewid", "crew_name", "father", "emp_code", "mobile_no")
 @admin.register(Score)
 class ScoreAdmin(admin.ModelAdmin):
-    list_display = ('player_crew_name', 'player_crewid', 'total_score', 'created_at')
+    list_display = ('player_crew_name', 'player_crewid', 'total_score','created_at')
     search_fields = ('player__crew_name', 'player__crewid')
     list_filter = ('created_at',)
     def player_crew_name(self, obj):

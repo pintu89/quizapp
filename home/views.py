@@ -7,7 +7,8 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from home.utils import responses 
-from home.models import Player, Question, Score
+from home.models import Player, Question, Score, PlayerAnswer
+from django.db.models.functions import Random
 import random
 from django.db.models import F, Q
 from django.contrib import messages
@@ -98,20 +99,129 @@ def logout(request):
     is_player_logged_in = 'player_id' in request.session
     return render(request, "home/home.html", {'is_player_logged_in': is_player_logged_in})
 
+# New Try to submit and take question from db...
+def quiz(request):
+    if 'player_id' not in request.session:
+        return redirect('login')
 
-# This is Working Fine but showing all questions not selected.
+    selected_category = request.GET.getlist('category')
+    question_count = int(request.GET.get('question_count', 15))
+    player_id = request.session['player_id']
+    player = get_object_or_404(Player, id=player_id)
+    answered_ids = PlayerAnswer.objects.filter(player=player).values_list('question_id', flat=True)
+
+    if selected_category and selected_category !=['All']:
+        questions = Question.objects.filter(category__in=selected_category).exclude(id__in=answered_ids)   
+    else:
+        questions = Question.objects.all()    
+    questions = questions.exclude(id__in=answered_ids)
+    if not questions.exists():
+        PlayerAnswer.objects.filter(player=player).delete()
+        if selected_category and selected_category !=['All']:
+            questions = Question.objects.filter(category__in=selected_category)
+        else:
+            questions = Question.objects.all()
+        
+    questions = list(questions)
+    random.shuffle(questions)
+    questions = questions[:question_count]
+    request.session['quiz_questions'] = [q.id for q in questions]
+    formatted_questions = []
+    for q in questions:
+        options_texts = [q.option_a, q.option_b, q.option_c, q.option_d]
+        options_texts = [opt for opt in options_texts if opt]
+        random.shuffle(options_texts)
+        labels = ['A','B','C','D']
+        options = list(zip(labels, options_texts))
+        correct_text = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
+        formatted_questions.append({
+            'id' : q.id,
+            'question_text' : q.question_text,
+            'options' : options,
+            'correct_answer' : correct_text,
+        })
+    return render(
+        request,
+        "home/quiz.html",
+        {"questions": formatted_questions, 'is_player_logged_in': True}
+    )
+
+def submit_quiz(request):
+    try:
+        score = 0
+        results = []
+        question_ids = request.session.get('quiz_questions',[])
+        questions = Question.objects.filter(id__in=question_ids)
+        player_id = request.session.get('player_id')
+        if not player_id:
+            return responses.error(message="Player not logged in.", status=401) 
+        player = get_object_or_404(Player, id = player_id)
+
+        for q in questions:
+            selected = request.POST.get(f"q{q.id}")
+            correct = getattr(q, f"option_{q.correct_answer.lower()}") if q.correct_answer else None
+            is_correct = (selected == correct)
+
+            PlayerAnswer.objects.get_or_create(
+                player=player,
+                question=q,
+                defaults={
+                    "selected_answer": selected,
+                    "is_correct": is_correct
+                }
+            )
+
+            if is_correct:
+                score += q.score
+                results.append({
+                    "question" : q.question_text,
+                    "status" : "correct",
+                    "selected" : correct,
+                    "special_note" : q.special_note or ""
+                })
+            else:
+                results.append({
+                    "question" : q.question_text,
+                    "status": "Wrong",
+                    "selected" : selected or "No Answer",
+                    "correct": correct,
+                    "special_note" : q.special_note or ""
+                })
+        player.score = score
+        player.save(update_fields=['score'])
+        score_obj, created = Score.objects.get_or_create(player=player)
+        if created:
+            score_obj.total_score = score
+            score_obj.save()
+        else:
+            score_obj.total_score = F('total_score') + score
+            score_obj.refresh_from_db()
+        request.session.pop('quiz_questions', None)
+        return responses.success(
+            message="Quiz submitted successfully.",
+            data={
+                "score" : score,
+                "session_score" : player.score,
+                "total_score" : score_obj.total_score,
+                "results" : results,
+            }
+        )
+    except Exception as e:
+        return responses.error(message=str(e))
+
+
+
+'''
+# This is Working Fine but showing same questions repetedly.
 def quiz(request):
     if 'player_id' not in request.session:
         return redirect('login')
     selected_category = request.GET.getlist('category')
     question_count = int(request.GET.get('question_count', 15))
     if selected_category and selected_category != ['All']:
-        questions = Question.objects.filter(category__in=selected_category)
+        questions = Question.objects.filter(category__in=selected_category).order_by(Random()).distinct()[:question_count]
     else:
-        questions = Question.objects.all()
-    questions = list(questions) 
-    random.shuffle(questions)
-    questions = questions[:question_count]
+        questions = Question.objects.order_by(Random()).distinct()[:question_count]
     request.session['quiz_questions'] = [q.id for q in questions]   
     formatted_questions = []
     for q in questions:
@@ -160,26 +270,31 @@ def submit_quiz(request):
         
         # Save score to DB
         player_id = request.session.get('player_id')
-        if request.user.is_authenticated:
-            player = get_object_or_404(Player, id=player_id)
-            score_obj, created = Score.objects.get_or_create(player=player)
-            if created:
-                score_obj.total_score = score
-            else:
-                score_obj.total_score = F('total_score') + score
-            score_obj.save()
-            score_obj.refresh_from_db()
-            
+        if not player_id:
+            return responses.error(message="Player not logged in.", status=401)
+        player = get_object_or_404(Player, id=player_id)
+        player.score = score
+        player.save(update_fields=['score'])
+        score_obj, created = Score.objects.get_or_create(player=player)
+        if created:
+            score_obj.total_score = score
+        else:
+            score_obj.total_score = F('total_score') + score
+        score_obj.save()
+        score_obj.refresh_from_db()
         return responses.success(
             message="Quiz submitted successfully.",
             data={
                 "score": score,
+                "session_score": score,
+                "player_score": player.score,
+                "total_score": score_obj.total_score,
                 "results": results
             }
         )
     except Exception as e:
         return responses.error(message=str(e))
-
+'''
 # this is not working and need to solve it later
 def add_player(request):
     if request.method == "POST":
